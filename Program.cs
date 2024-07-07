@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Scripts;
 using Microsoft.Extensions.Configuration;
 
 internal class Program
@@ -31,14 +32,25 @@ internal class Program
 
         var product = new
         {
-            id = "new id",
+            id = Guid.NewGuid(),
             name = "IPhone 14 while",
             categoryId = "23",
             price = 1099.99,
         };
-        await CreateProductAsync(product);
+
+
+        // await CreateProductAsync(product);
         // await ReadProductAsync();
 
+        // Save procedure into database
+        var createProcedure = new StoredProcedureProperties{
+            Id = "createProduct",
+            Body = File.ReadAllText("productCreation.js"),
+        };
+        await container.Scripts.CreateStoredProcedureAsync(createProcedure);
+        // Execute the procedure
+        var response = await container.Scripts.ExecuteStoredProcedureAsync<dynamic>("createProduct", new PartitionKey(product.categoryId), new[] { product });
+        Console.WriteLine(response.Resource);
     }
 
     private static async Task CreateProductAsync(Object product)

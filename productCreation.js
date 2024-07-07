@@ -1,5 +1,7 @@
-const createProduct = (product)=>{
+function createProduct(product){
+    const context = getContext();
     const container = context.getCollection();
+    const response = context.getResponse()
     container.createDocument(
       container.getSelfLink(),
       product,
